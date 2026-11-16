@@ -23,3 +23,23 @@ make check
 
 Сборка не требуется. Для проверки синтаксиса используйте `make check`.
 Тесты запускаются встроенным `unittest`, установки пакетов не требуется.
+
+## Этап 2. Прямые зависимости Cargo
+
+```sh
+sh run.sh examples/itoa.toml direct
+```
+
+`Registry` получает JSON Lines из HTTP sparse index, строит адрес по
+правилам Cargo и выбирает точную корневую версию. `direct` выводит
+имена, требования версий, тип, optional и target прямых зависимостей.
+Обрабатываются переименования через поле `package` и ошибки HTTP/JSON.
+Данные кэшируются в памяти. `versions.py` самостоятельно обрабатывает
+SemVer, prerelease, caret, tilde, wildcard и пересечения сравнений.
+
+Политика анализа: все объявленные normal/build зависимости, включая
+optional и зависимости для всех платформ; dev зависимости исключены.
+Это граф деклараций, а не полный resolver Cargo с активацией features.
+Внешние registry в зависимостях явно отклоняются.
+
+Формат индекса: [Cargo Book](https://doc.rust-lang.org/cargo/reference/registry-index.html).
