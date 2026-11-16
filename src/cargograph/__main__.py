@@ -1,0 +1,5 @@
+"""Run the command-line interface as a Python module."""
+
+from .cli import main
+
+raise SystemExit(main())
