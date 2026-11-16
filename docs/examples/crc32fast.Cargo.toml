@@ -1,0 +1,10 @@
+[package]
+name = "compare-crc32fast"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "lib.rs"
+
+[dependencies]
+crc32fast = "=1.4.2"

@@ -41,6 +41,7 @@ class ConfigTests(unittest.TestCase):
             ('repository = "graph.json"', 'repository = "missing"'),
             ('test_mode = true', 'test_mode = "true"'),
             ('version = "1.0.0"', 'version = "latest"'),
+            ('version = "1.0.0"', 'version = "01.0.0"'),
             ('ascii_tree = true', 'ascii_tree = 1'),
             ('exclude = ""', 'exclude = false'),
             ('exclude = ""', 'exclude = "A"'),
@@ -59,7 +60,9 @@ class ConfigTests(unittest.TestCase):
     def test_url_validation(self):
         """Only clean HTTP(S) sparse-index URLs are allowed."""
         base = BASE.replace('test_mode = true', 'test_mode = false')
-        for url in ['file:///tmp/index', 'https://', 'https://u:p@host']:
+        urls = ['file:///tmp/index', 'https://', 'https://u:p@host',
+                'https://[bad', 'https://host:bad', 'https://bad host']
+        for url in urls:
             content = base.replace('graph.json', url)
             with self.subTest(url=url), self.assertRaises(AppError):
                 self.load(content)

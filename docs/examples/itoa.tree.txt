@@ -1,0 +1,10 @@
+itoa@1.0.15
+`-- no-panic@0.1.37
+    |-- proc-macro2@1.0.107
+    |   `-- unicode-ident@1.0.27
+    |-- quote@1.0.47
+    |   `-- proc-macro2@1.0.107 [shared]
+    `-- syn@3.0.10
+        |-- proc-macro2@1.0.107 [shared]
+        |-- quote@1.0.47 [shared]
+        `-- unicode-ident@1.0.27 [shared]

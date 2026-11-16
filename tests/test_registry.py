@@ -1,10 +1,12 @@
 """Sparse registry unit tests with no external network calls."""
 
+import io
+import json
 import unittest
 from unittest.mock import patch
 
 from cargograph.config import AppError
-from cargograph.registry import Node, Registry, index_path
+from cargograph.registry import Node, Registry, fetch_records, index_path
 
 
 def record(version='1.0.0', **values):
@@ -62,3 +64,23 @@ class RegistryTests(unittest.TestCase):
             fetch.return_value = [item]
             with self.subTest(item=item), self.assertRaises(AppError):
                 Registry('https://index.example').records('demo')
+
+    @patch('cargograph.registry.urlopen')
+    def test_http_decoding(self, open_url):
+        """Decode real JSON Lines bytes through the HTTP response interface."""
+        content = json.dumps(record()).encode() + b'\n\n'
+        open_url.return_value = io.BytesIO(content)
+        self.assertEqual(fetch_records('https://example/de/mo/demo'),
+                         [record()])
+
+    @patch('cargograph.registry.urlopen')
+    def test_http_errors(self, open_url):
+        """Network, empty and malformed payloads become application errors."""
+        open_url.side_effect = OSError('offline')
+        with self.assertRaises(AppError):
+            fetch_records('https://example/de/mo/demo')
+        open_url.side_effect = None
+        for content in [b'', b'not json', b'\xff']:
+            open_url.return_value = io.BytesIO(content)
+            with self.subTest(content=content), self.assertRaises(AppError):
+                fetch_records('https://example/de/mo/demo')

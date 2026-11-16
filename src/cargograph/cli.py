@@ -7,8 +7,8 @@ import sys
 from .config import AppError, read_config
 from .graph import build_graph, reverse_dependencies, select_target
 from .registry import Registry
+from .render import ascii_tree, dot_graph
 from .testrepo import TestRepository
-from .versions import Version
 
 
 def parser():
@@ -29,7 +29,6 @@ def main(argv=None):
         parser().error("--target is valid only for reverse")
     try:
         config = read_config(args.config)
-        Version.parse(config.version)
         execute(config, args.command, args.target)
         return 0
     except (AppError, OSError, RecursionError) as error:
@@ -50,8 +49,9 @@ def execute(config, command, target=None):
         return
     if command == 'graph':
         graph = build_graph(registry, [root], config.exclude)
-        for node, children in graph.items():
-            print(f"{node}: {', '.join(map(str, sorted(children)))}")
+        print(dot_graph(graph))
+        if config.ascii_tree:
+            print(ascii_tree(graph, root), file=sys.stderr)
         return
     print(f"Direct dependencies of {root}:")
     for dependency in registry.dependencies(root):

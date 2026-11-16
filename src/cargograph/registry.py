@@ -12,6 +12,7 @@ from .versions import Version, matches
 
 MAX_INDEX_BYTES = 32 * 1024 * 1024
 TIMEOUT_SECONDS = 30
+THREE_LETTER_NAME = 3
 
 
 @dataclass(frozen=True, order=True)
@@ -45,7 +46,7 @@ def index_path(name):
     short_paths = {1: f"1/{name}", 2: f"2/{name}"}
     if len(name) in short_paths:
         return short_paths[len(name)]
-    if len(name) == 3:
+    if len(name) == THREE_LETTER_NAME:
         return f"3/{name[0]}/{name}"
     return f"{name[:2]}/{name[2:4]}/{name}"
 

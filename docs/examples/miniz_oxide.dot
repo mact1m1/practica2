@@ -1,0 +1,32 @@
+digraph dependencies {
+  rankdir=LR;
+  "adler2@2.0.1";
+  "miniz_oxide@0.8.9";
+  "proc-macro2@1.0.107";
+  "quote@1.0.47";
+  "rustc-std-workspace-alloc@1.0.1";
+  "rustc-std-workspace-core@1.0.1";
+  "serde@1.0.229";
+  "serde_core@1.0.229";
+  "serde_derive@1.0.229";
+  "simd-adler32@0.3.10";
+  "syn@3.0.10";
+  "unicode-ident@1.0.27";
+  "adler2@2.0.1" -> "rustc-std-workspace-core@1.0.1";
+  "miniz_oxide@0.8.9" -> "adler2@2.0.1";
+  "miniz_oxide@0.8.9" -> "rustc-std-workspace-alloc@1.0.1";
+  "miniz_oxide@0.8.9" -> "rustc-std-workspace-core@1.0.1";
+  "miniz_oxide@0.8.9" -> "serde@1.0.229";
+  "miniz_oxide@0.8.9" -> "simd-adler32@0.3.10";
+  "proc-macro2@1.0.107" -> "unicode-ident@1.0.27";
+  "quote@1.0.47" -> "proc-macro2@1.0.107";
+  "serde@1.0.229" -> "serde_core@1.0.229";
+  "serde@1.0.229" -> "serde_derive@1.0.229";
+  "serde_core@1.0.229" -> "serde_derive@1.0.229";
+  "serde_derive@1.0.229" -> "proc-macro2@1.0.107";
+  "serde_derive@1.0.229" -> "quote@1.0.47";
+  "serde_derive@1.0.229" -> "syn@3.0.10";
+  "syn@3.0.10" -> "proc-macro2@1.0.107";
+  "syn@3.0.10" -> "quote@1.0.47";
+  "syn@3.0.10" -> "unicode-ident@1.0.27";
+}

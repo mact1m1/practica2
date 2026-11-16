@@ -1,0 +1,18 @@
+digraph dependencies {
+  rankdir=LR;
+  "itoa@1.0.15";
+  "no-panic@0.1.37";
+  "proc-macro2@1.0.107";
+  "quote@1.0.47";
+  "syn@3.0.10";
+  "unicode-ident@1.0.27";
+  "itoa@1.0.15" -> "no-panic@0.1.37";
+  "no-panic@0.1.37" -> "proc-macro2@1.0.107";
+  "no-panic@0.1.37" -> "quote@1.0.47";
+  "no-panic@0.1.37" -> "syn@3.0.10";
+  "proc-macro2@1.0.107" -> "unicode-ident@1.0.27";
+  "quote@1.0.47" -> "proc-macro2@1.0.107";
+  "syn@3.0.10" -> "proc-macro2@1.0.107";
+  "syn@3.0.10" -> "quote@1.0.47";
+  "syn@3.0.10" -> "unicode-ident@1.0.27";
+}

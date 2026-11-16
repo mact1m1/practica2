@@ -38,9 +38,9 @@ class VersionTests(unittest.TestCase):
 
     def test_invalid(self):
         """Reject malformed exact versions and unsupported constraints."""
-        for value in ['01.0.0', '1.0', '1.0.0-01', 'a.b.c']:
+        for value in ['01.0.0', '1.0', '1.0.0-01', 'a.b.c', '1.2٢.3']:
             with self.subTest(value=value), self.assertRaises(AppError):
                 Version.parse(value)
-        for value in ['1 || 2', '>=1.*', '', '1.2.3.4', '1.01']:
+        for value in ['1 || 2', '>=1.*', '', '1.2.3.4', '1.01', '1.xX']:
             with self.subTest(value=value), self.assertRaises(AppError):
                 matches('1.0.0', value)

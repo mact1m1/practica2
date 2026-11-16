@@ -7,6 +7,10 @@ import re
 from .config import AppError
 
 
+CORE_SIZE = 3
+PATCH_INDEX = CORE_SIZE - 1
+
+
 @total_ordering
 @dataclass(frozen=True)
 class Version:
@@ -19,7 +23,7 @@ class Version:
     def parse(cls, text):
         """Parse an exact SemVer and reject leading zeroes."""
         match = re.fullmatch(
-            r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
+            r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
             r"(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?"
             r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?", text
         )
@@ -53,17 +57,18 @@ def requirement_part(text):
         raise AppError(f"Unsupported Cargo requirement: {text}")
     operator, number = match.groups()
     pieces = number.split('-')[0].split('+')[0].split('.')
-    wild = next((i for i, p in enumerate(pieces) if p in '*xX'), None)
+    wildcards = {'*', 'x', 'X'}
+    wild = next((i for i, p in enumerate(pieces) if p in wildcards), None)
     if wild is not None:
-        if operator or any(p not in '*xX' for p in pieces[wild:]):
+        if operator or any(p not in wildcards for p in pieces[wild:]):
             raise AppError(f"Invalid wildcard requirement: {text}")
         pieces = pieces[:wild]
         operator = '*'
     length = len(pieces)
-    if length > 3:
+    if length > CORE_SIZE:
         raise AppError(f"Invalid version requirement: {text}")
-    padded = '.'.join(pieces + ['0'] * (3 - length))
-    if length == 3:
+    padded = '.'.join(pieces + ['0'] * (CORE_SIZE - length))
+    if length == CORE_SIZE:
         padded = number
     return operator or '^', Version.parse(padded), length
 
@@ -72,7 +77,7 @@ def upper_bound(base, index):
     """Increment one component and zero subsequent components."""
     numbers = list(base.core)
     numbers[index] += 1
-    numbers[index + 1:] = [0] * (2 - index)
+    numbers[index + 1:] = [0] * (PATCH_INDEX - index)
     return Version(tuple(numbers))
 
 
@@ -82,7 +87,8 @@ def accepts(version, operator, base, length):
         return not length or base <= version < upper_bound(base, length - 1)
     if operator == '^':
         nonzero = next((i for i, n in enumerate(base.core) if n), None)
-        index = min(nonzero if nonzero is not None else 2, length - 1)
+        index = min(nonzero if nonzero is not None else PATCH_INDEX,
+                    length - 1)
         return base <= version < upper_bound(base, index)
     if operator == '~':
         return base <= version < upper_bound(base, min(length - 1, 1))
@@ -92,15 +98,15 @@ def accepts(version, operator, base, length):
 def comparison(version, operator, base, length):
     """Evaluate equality and ordered bounds, including partial versions."""
     if operator == '=':
-        if length < 3:
+        if length < CORE_SIZE:
             return base <= version < upper_bound(base, length - 1)
         return version == base
     if operator == '>':
-        if length < 3:
+        if length < CORE_SIZE:
             return version >= upper_bound(base, length - 1)
         return version > base
     if operator == '<=':
-        if length < 3:
+        if length < CORE_SIZE:
             return version < upper_bound(base, length - 1)
         return version <= base
     if operator == '>=':

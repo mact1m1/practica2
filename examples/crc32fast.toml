@@ -1,0 +1,6 @@
+package = "crc32fast"
+repository = "https://index.crates.io"
+test_mode = false
+version = "1.4.2"
+ascii_tree = true
+exclude = ""

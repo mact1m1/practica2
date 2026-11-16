@@ -51,12 +51,12 @@ def validate_types(config):
 
 def validate_values(config):
     """Check package names, exact versions and visible filter characters."""
+    from .versions import Version
+
     pattern = r"[A-Z]+" if config.test_mode else r"[A-Za-z][\w-]*"
     if not re.fullmatch(pattern, config.package, flags=re.ASCII):
         raise AppError("package: invalid name for the selected mode")
-    version = r"\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[\w.-]+)?"
-    if not re.fullmatch(version, config.version, flags=re.ASCII):
-        raise AppError("version: expected an exact version, e.g. 1.2.3")
+    Version.parse(config.version)
     if any(not char.isprintable() for char in config.exclude):
         raise AppError("exclude: control characters are not allowed")
     if config.exclude and config.exclude in config.package:
@@ -74,9 +74,21 @@ def resolve_repository(config, directory):
             raise AppError(f"repository: test file not found: {path}")
         values["repository"] = str(path.resolve())
     else:
-        url = urlsplit(config.repository)
+        url = parse_url(config.repository)
         if url.scheme not in {"http", "https"} or not url.hostname:
             raise AppError("repository: expected an HTTP(S) sparse URL")
         if url.username or url.password or url.query or url.fragment:
             raise AppError("repository: credentials/query/fragment forbidden")
     return Config(**values)
+
+
+def parse_url(text):
+    """Report malformed host/port syntax as a configuration error."""
+    try:
+        url = urlsplit(text)
+        url.port
+    except ValueError as error:
+        raise AppError(f"repository: invalid URL: {error}") from error
+    if any(char.isspace() or not char.isprintable() for char in text):
+        raise AppError("repository: whitespace/control characters forbidden")
+    return url
