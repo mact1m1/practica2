@@ -9,6 +9,7 @@ from .config import AppError
 
 CORE_SIZE = 3
 PATCH_INDEX = CORE_SIZE - 1
+WILDCARDS = frozenset({'*', 'x', 'X'})
 
 
 @total_ordering
@@ -50,6 +51,16 @@ def pre_key(part):
     return (0, int(part)) if part.isdigit() else (1, part)
 
 
+def split_wildcard(operator, pieces, text):
+    """Separate the numeric prefix from an optional wildcard suffix."""
+    for index, piece in enumerate(pieces):
+        if piece in WILDCARDS:
+            if operator or not WILDCARDS.issuperset(pieces[index:]):
+                raise AppError(f"Invalid wildcard requirement: {text}")
+            return '*', pieces[:index]
+    return operator or '^', pieces
+
+
 def requirement_part(text):
     """Return an operator, padded version and specified core length."""
     match = re.fullmatch(r"(>=|<=|>|<|=|\^|~)?\s*(\S+)", text.strip())
@@ -57,20 +68,14 @@ def requirement_part(text):
         raise AppError(f"Unsupported Cargo requirement: {text}")
     operator, number = match.groups()
     pieces = number.split('-')[0].split('+')[0].split('.')
-    wildcards = {'*', 'x', 'X'}
-    wild = next((i for i, p in enumerate(pieces) if p in wildcards), None)
-    if wild is not None:
-        if operator or any(p not in wildcards for p in pieces[wild:]):
-            raise AppError(f"Invalid wildcard requirement: {text}")
-        pieces = pieces[:wild]
-        operator = '*'
+    operator, pieces = split_wildcard(operator, pieces, text)
     length = len(pieces)
     if length > CORE_SIZE:
         raise AppError(f"Invalid version requirement: {text}")
     padded = '.'.join(pieces + ['0'] * (CORE_SIZE - length))
     if length == CORE_SIZE:
         padded = number
-    return operator or '^', Version.parse(padded), length
+    return operator, Version.parse(padded), length
 
 
 def upper_bound(base, index):

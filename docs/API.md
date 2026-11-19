@@ -122,6 +122,8 @@ SemVer ordering and Cargo version requirements without dependencies.
 
 `pre_key` — Place numeric prerelease identifiers before textual identifiers.
 
+`split_wildcard` — Separate the numeric prefix from an optional wildcard suffix.
+
 `requirement_part` — Return an operator, padded version and specified core length.
 
 `upper_bound` — Increment one component and zero subsequent components.
